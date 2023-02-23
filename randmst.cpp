@@ -37,12 +37,12 @@ class EdgeCompareClass {
         }
 };
 
+// Priority Heap implementation
 class MinHeap {
     public:
         Edge e;
         MinHeap* c1 = (MinHeap*) malloc(sizeof(MinHeap));
         MinHeap* c2 = (MinHeap*) malloc(sizeof(MinHeap));
-        
         int size = 1;
 
         MinHeap (const Edge & inite) : e(inite) {}
@@ -78,7 +78,6 @@ class MinHeap {
                 }
                 swap();
             }
- 
         }
 
         void swap() {
@@ -209,52 +208,7 @@ vector<vector<Edge> > edgefromvertex(const vector<vector<float> >& V, int N, int
 }
 
 // Returns weight of minimum spanning tree, returns -1 upon failure
-// float prim(vector<vector<Edge> > E, int N){
-//     priority_queue<Edge, vector<Edge>, EdgeCompareClass> Q;
-//     vector<Edge> mst;
-//     bool spanned[N]; // whether index i is connected to MST
-//     // Initialization: we start with v0
-//     for (int i=0; i<N; i++)
-//         spanned[i] = false;
-//     spanned[0] = true;
-
-//     for (auto& e : E[0]) // for e in E[0]
-//         Q.push(e);
-
-//     for (int i=0; i<N-1; i++){
-//         bool init = true;
-//         auto minE = Edge(-1, -1, -1.);
-//         // Select a minimum-weight edge from current cut. Remove those which are not in cut
-//         while (init || (spanned[minE.v] && spanned[minE.w])){
-//             // if (!init)
-//                 // cout << "        Ignoring: " << minE.v << " <-> " << minE.w << " : " << minE.weight << endl;
-//             if (Q.empty()) // Returns -1 if Q is empty (ran out of edges, which indicates failure)
-//                 return -1;
-//             minE = Q.top();
-//             Q.pop();
-//             cout << "min: " << minE.weight << endl;
-//             init = false;
-//         }
-//         // cout << i << "    Selected from candidates: " << minE.v << " <-> " << minE.w << " : " << minE.weight << endl;
-//         int newv = spanned[minE.w] ? minE.v : minE.w;
-//         // insert newv into spanned vertices
-//         spanned[newv] = true;
-//         mst.push_back(minE);
-//         // Insert new edges into current cut
-//         for (auto &e : E[newv])
-//             if (!(spanned[e.w] && spanned[e.v])){
-//                 // cout << "        Added to MST candidates: " << e.v << " <-> " << e.w << " : " << e.weight << endl;
-//                 Q.push(e);
-//             }
-//     }
-//     float mstweight = 0;
-//     for (auto& e : mst)
-//         mstweight += e.weight;
-//     return mstweight;
-// }
-
-// Our heap implementation
-float prim_our(vector<vector<Edge> > E, int N){
+float prim(vector<vector<Edge> > E, int N){
     MinHeap Q(Edge(-1, -1, 2.));
     vector<Edge> mst;
     bool spanned[N]; // whether index i is connected to MST
@@ -271,15 +225,11 @@ float prim_our(vector<vector<Edge> > E, int N){
         auto minE = Edge(-1, -1, 2.0);
         // Select a minimum-weight edge from current cut. Remove those which are not in cut
         while (init || (spanned[minE.v] && spanned[minE.w])){
-            // if (!init)
-                // cout << "        Ignoring: " << minE.v << " <-> " << minE.w << " : " << minE.weight << endl;
             if (Q.empty()) // Returns -1 if Q is empty (ran out of edges, which indicates failure)
                 return -1;
             minE = Q.pop();
-            cout << "min:  " << minE.weight << endl;
             init = false;
         }
-        // cout << i << "    Selected from candidates: " << minE.v << " <-> " << minE.w << " : " << minE.weight << endl;
         int newv = spanned[minE.w] ? minE.v : minE.w;
         // insert newv into spanned vertices
         spanned[newv] = true;
@@ -287,7 +237,6 @@ float prim_our(vector<vector<Edge> > E, int N){
         // Insert new edges into current cut
         for (auto &e : E[newv])
             if (!(spanned[e.w] && spanned[e.v])){
-                // cout << "        Added to MST candidates: " << e.v << " <-> " << e.w << " : " << e.weight << endl;
                 Q.push(e);
             }
     }
@@ -297,89 +246,55 @@ float prim_our(vector<vector<Edge> > E, int N){
     return mstweight;
 }
 
-// Generates ONE graph of N vertices from [0, 1]^D. Returns weight of MST on the graph
-// float run_trial(int N, int D){
-//     auto V = generate_vertex(N, D);
 
-//     // sqrt(D/N) is just a heuristic function. We start at this value and increment cutoff upon failure
-//     float cutoff = pow((float) D, .5) * pow(N, -1. / D) / 2, mstweight = 0;
-//     // cout << "Vertex generated " << cutoff << " " << pow(N, -1. / D) << endl;
-//     bool rerun = true;
-//     while (rerun) {
-//         auto E = edgefromvertex(V, N, D, cutoff);
-//         // cout << "Edges generated @ cutoff " << cutoff << endl;
-//         mstweight = prim(E, N);
-//         if (mstweight == -1){
-//             cutoff += pow((float) D, .5) * pow(N, -1. / D) / 2; // Regenerate graph and run again
-//             // cout << "MST compute failure" << endl;
-//         }
-//         else
-//             rerun = false;
-//     }
-//     // cout << "MST weight:" << mstweight << " successful calculation @ cutoff: " << cutoff << endl;
-//     return mstweight;
-// }
-
-float run_trial_our(int N, int D){
+float run_trial(int N, int D){
     auto V = generate_vertex(N, D);
 
     // sqrt(D/N) is just a heuristic function. We start at this value and increment cutoff upon failure
     float cutoff = pow((float) D, .5) * pow(N, -1. / D) / 2, mstweight = 0;
-    // cout << "Vertex generated " << cutoff << " " << pow(N, -1. / D) << endl;
     bool rerun = true;
     while (rerun) {
         auto E = edgefromvertex(V, N, D, cutoff);
-        // cout << "Edges generated @ cutoff " << cutoff << endl;
-        mstweight = prim_our(E, N);
+        mstweight = prim(E, N);
         if (mstweight == -1){
             cutoff += pow((float) D, .5) * pow(N, -1. / D) / 2; // Regenerate graph and run again
-            // cout << "MST compute failure" << endl;
         }
         else
             rerun = false;
     }
-    // cout << "MST weight:" << mstweight << " successful calculation @ cutoff: " << cutoff << endl;
     return mstweight;
 }
 
 float run_trial_0 (int N) {
-    // cout << "N" << N << endl;
     float cutoff = 100.0 / (float) N;
-    // cout << "cutoff: " << cutoff << endl;
     float mstweight = 0;
 
     bool rerun = true;
     while (rerun) {
         auto E = edges_0(N, cutoff);
         // cout << "Edges generated @ cutoff " << cutoff << endl;
-        mstweight = prim_our(E, N);
+        mstweight = prim(E, N);
         if (mstweight == -1){
             cutoff *= 2; // Regenerate graph and run again
-            // cout << "MST compute failure" << endl;
-            // cout << "increased cutoff" << endl;
         }
         else
             rerun = false;
     }
-    // cout << "MST weight:" << mstweight << " successful calculation @ cutoff: " << cutoff << endl;
     return mstweight;
 }
 
 int main(int argc, char** argv)
 {
-    // srand(time(0));
-    srand(102232233);
+    srand(time(0));
     // Parse arguments
     int N = stoi(string(argv[1])), K = stoi(string(argv[2])), D = stoi(string(argv[3]));
 
     float mstweight = 0;
-    for (int i = 0; i < K; i++)
-        mstweight += (D == 0) ?  run_trial_0(N) : run_trial_our(N, D);
-    mstweight /= K;
 
-    // float mstweight2 = run_trial_our(N, D);
-    // average, numpoints, numtrials, dimension
+    for (int i = 0; i < K; i++)
+        mstweight += (D == 0) ?  run_trial_0(N) : run_trial(N, D);
+
+    mstweight /= K;
     cout << mstweight << " " << N << " " << K << " " << D << endl;
-    // cout << mstweight2 << " " << N << " " << K << " " << D << endl;
     return 0;
 }
